@@ -1,0 +1,76 @@
+% rainbow.sty
+% 
+% This rainbow parentheses implementation combines the code from
+% https://tex.stackexchange.com/questions/88682/indicating-matching-brackets-parentheses-in-tex-output 
+% by Ryan Reich and
+% https://tex.stackexchange.com/questions/235740/how-can-i-color-parentheses-depending-on-the-nesting-level-like-emacs-rainbow
+% by Jubobs, and uses egreg's modular arithmetic code.
+%
+% 
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{rainbow}
+
+\RequirePackage{xcolor}
+
+\definecolor{color0}{RGB}{147, 147, 147} 
+\definecolor{color1}{RGB}{186, 033, 033}
+\definecolor{color2}{RGB}{000, 128, 000}
+\definecolor{color3}{RGB}{064, 128, 128}
+\definecolor{color4}{RGB}{170, 034, 255}
+
+\def\truncdiv#1#2{((#1-(#2-1)/2)/#2)}
+\def\moduloop#1#2{(#1-\truncdiv{#1}{#2}*#2)}
+\def\modulo#1#2{\number\numexpr\moduloop{#1}{#2}\relax}
+
+\newcommand\rainbow[1]{%
+  \ifcase\modulo{\the\value{parens}} 5\relax%
+  \textcolor{color0}{#1}%
+  \or
+  \textcolor{color1}{#1}%
+  \or
+  \textcolor{color2}{#1}%
+  \or
+  \textcolor{color3}{#1}%
+  \else
+  \textcolor{color4}{#1}%
+  \fi
+}
+
+% \newcommand\rainbow[1]{%
+%    \textcolor{color\modulo{\the\value{parens}} 5}{#1}%
+%  }
+
+\newcounter{parens}
+
+\def\countlparen{%
+    \addtocounter{parens}{1}\rainbow{\lparen}%
+}
+\def\countrparen{%
+    \rainbow{\rparen}\addtocounter{parens}{-1}%
+}
+
+\let\lparen(
+\let\rparen)
+
+\begingroup
+    \catcode`(\active
+    \catcode`)\active
+    \gdef\countparens{%
+        \let(\countlparen
+        \let)\countrparen
+    }
+\endgroup   
+
+\newenvironment{cps}
+{%
+    \catcode`(\active
+    \catcode`)\active
+    \countparens
+    \setcounter{parens}{0}%
+}
+{}
+\endinput
+
+
+%%
+%% End of file `rainbow.sty'.
